@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="wishlist.css">
+
+        <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+
+        <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+        <title>Wishlist</title>
+    </head>
+    <body>
+        <div id="root"></div>
+    </body>
+
+    <script type="text/babel">
+
+        class Item extends React.Component {
+            constructor(props) {
+                super(props);
+            }
+
+            delete() {
+                this.props.delete(this.props.index);
+            }
+
+            render() {
+                return (
+                    <li>{this.props.name}: ${this.props.price} <button onClick={this.delete.bind(this)}>Delete</button></li>
+                )
+            }
+        }
+
+        class NewItemForm extends React.Component {
+            constructor() {
+                super();
+                this.state = {
+                    name: '',
+                    price: ''
+                }
+            }
+
+            handleNameChange(event) {
+                this.setState({
+                    name: event.target.value
+                })
+            }
+            handlePriceChange(event) {
+                this.setState({
+                    price: parseInt(event.target.value)
+                })
+            }
+
+            handleSubmit(event) {
+                event.preventDefault();
+                if (this.state.name === ''){
+                    alert('Please enter a name!')
+                    return
+                }
+                if (this.state.price === ''){
+                    alert('Please enter a price!')
+                    return
+                }
+                this.props.handleSubmit(this.state);
+                this.setState({
+                    name: '',
+                    price: ''
+                })
+            }
+
+            render() {
+                return (
+                    <React.Fragment>
+                        <h4>Add new:</h4>
+                        <form onSubmit={this.handleSubmit.bind(this)}>
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <th><label htmlFor="name">Name:</label></th>
+                                    <td>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={this.state.name}
+                                            onChange={this.handleNameChange.bind(this)}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th><label htmlFor="price">Price:</label></th>
+                                    <td>
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            min="0"
+                                            value={this.state.price}
+                                            onChange={this.handlePriceChange.bind(this)}
+                                        />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <td>
+                                        <input type="submit" value="Submit" />
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </form>
+                    </React.Fragment>
+                )
+            }
+        }
+
+        class App extends React.Component {
+            constructor() {
+                super();
+                this.state = {items: [{name: 'computer', price: 300}]}
+            }
+
+            addNew(newItem) {
+                var oldItems = this.state.items.slice();
+                oldItems.push(newItem);
+                this.setState(state => ({
+                    items: oldItems
+                }));
+            }
+
+            delete(index) {
+                var oldItems = this.state.items.slice();
+                oldItems.splice(index, 1);
+                this.setState({
+                    items: oldItems
+                })
+            }
+
+            render() {
+                const allitems = this.state.items.map((item, index) =>
+                    <Item
+                        name={item.name}
+                        price={item.price}
+                        key={item.name}
+                        index={index}
+                        delete={this.delete.bind(this)}
+                    />
+                )
+                return (
+                    <div>
+                        <h3>Cool stuff I want:</h3>
+                        <ul>
+                            {allitems}
+                        </ul>
+                        <NewItemForm
+                            handleSubmit={this.addNew.bind(this)}/>
+                    </div>
+                );
+            }
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+
+    </script>
+
+</html>

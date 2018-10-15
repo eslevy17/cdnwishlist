@@ -22,12 +22,12 @@
                 this.state = {
                     name: this.props.name,
                     price: this.props.price,
-                    editing: false
+                    editing: false,
                 }
             }
 
             delete() {
-                this.props.delete(this.props.index);
+                this.props.delete(this.props.index, this.props.list);
             }
 
             edit() {
@@ -44,7 +44,7 @@
                     name: this.state.name,
                     price: this.state.price
                 }
-                this.props.update(updatedItem, this.props.index);
+                this.props.update(updatedItem, this.props.index, this.props.list);
                 this.setState({
                     editing: false
                 })
@@ -97,11 +97,11 @@
         }
 
         class NewItemForm extends React.Component {
-            constructor() {
-                super();
+            constructor(props) {
+                super(props);
                 this.state = {
                     name: '',
-                    price: ''
+                    price: '',
                 }
             }
 
@@ -126,7 +126,7 @@
                     alert('Please enter a price!')
                     return
                 }
-                this.props.handleSubmit(this.state);
+                this.props.handleSubmit(this.state, this.props.list);
                 this.setState({
                     name: '',
                     price: ''
@@ -138,7 +138,7 @@
                     <React.Fragment>
                         <h4>Add new:</h4>
                         <form onSubmit={this.handleSubmit.bind(this)}>
-                            <table>
+                            <table className="newItemForm">
                                 <tbody>
                                 <tr>
                                     <th><label htmlFor="name">Name:</label></th>
@@ -180,56 +180,85 @@
         class App extends React.Component {
             constructor() {
                 super();
-                this.state = {items: [{name: 'computer', price: 300}]}
+                this.state = {
+                    wants: [{name: 'computer', price: 300}],
+                    needs: [{name: 'random bills', price: 100}]
+
+                }
             }
 
-            addNew(newItem) {
-                var oldItems = this.state.items.slice();
+            addNew(newItem, list) {
+                var oldItems = this.state[list].slice();
                 oldItems.push(newItem);
-                this.setState(state => ({
-                    items: oldItems
-                }));
-            }
-
-            delete(index) {
-                var oldItems = this.state.items.slice();
-                oldItems.splice(index, 1);
                 this.setState({
-                    items: oldItems
+                    [list]: oldItems
                 })
             }
 
-            update(updatedItem, index) {
-                var oldItems = this.state.items.slice();
+            delete(index, list) {
+                var oldItems = this.state[list].slice();
+                oldItems.splice(index, 1);
+                this.setState({
+                    [list]: oldItems
+                })
+            }
+
+            update(updatedItem, index, list) {
+                var oldItems = this.state[list].slice();
                 oldItems[index] = updatedItem;
                 this.setState({
-                    items: oldItems
+                    [list]: oldItems
                 })
             }
 
             render() {
-                const allitems = this.state.items.map((item, index) =>
+                const allWants = this.state.wants.map((want, index) =>
                     <Item
-                        name={item.name}
-                        price={item.price}
-                        key={item.name}
+                        name={want.name}
+                        price={want.price}
+                        key={want.name}
                         index={index}
                         delete={this.delete.bind(this)}
                         update={this.update.bind(this)}
+                        list='wants'
                     />
                 )
+                const allNeeds = this.state.needs.map((need, index) =>
+                    <Item
+                        name={need.name}
+                        price={need.price}
+                        key={need.name}
+                        index={index}
+                        delete={this.delete.bind(this)}
+                        update={this.update.bind(this)}
+                        list='needs'
+                    />
+                )
+
+
                 return (
                     <div>
-                        <h3>Cool stuff I want:</h3>
+                        <div className="expenseBlock">
+                            <h3>Cool stuff I want:</h3>
+                            <table className="productTable">
+                                <tbody>
+                                    {allWants}
+                                </tbody>
+                            </table>
+                            <NewItemForm
+                                handleSubmit={this.addNew.bind(this)} list='wants'/>
+                        </div>
 
-                        <table className="productTable">
-                            <tbody>
-                                {allitems}
-                            </tbody>
-                        </table>
-
-                        <NewItemForm
-                            handleSubmit={this.addNew.bind(this)}/>
+                        <div className="expenseBlock">
+                            <h3>Important stuff I need:</h3>
+                            <table className="productTable">
+                                <tbody>
+                                    {allNeeds}
+                                </tbody>
+                            </table>
+                            <NewItemForm
+                                handleSubmit={this.addNew.bind(this)} list='needs'/>
+                        </div>
                     </div>
                 );
             }
